@@ -20,12 +20,12 @@ func main() {
 }
 #+END_SRC
 
-If the programs execute normally, the wrapped function that prints
+If the program executes normally, the wrapped function that prints
 =Cleaning up= will be called in defer as usual.
 
 However, if the program is terminated by signals like SIGTERM,
-deferred functions will no run. And in this case, the wrapped function
-will be called in the signal handlers registered in
+deferred functions will not run. And in this case, the wrapped
+function will be called in the signal handler registered in
 =RegisterShutdownHook=.
 
 The wrapped function is guaranteed to be called only once, either in
