@@ -1,0 +1,30 @@
+* finally
+
+Makes sure cleanup functions are called in addition to =defer=.
+
+** Example
+
+#+BEGIN_SRC go
+func main() {
+	finally.RegisterShutdownHook()
+
+	cleanup := finally.Wrap(func() {
+		fmt.Println("Cleaning up")
+	})
+
+	defer cleanup()
+
+	// do something
+}
+#+END_SRC
+
+If the programs execute normally, the wrapped function that prints
+=Cleaning up= will be called in defer as usual.
+
+However, if the program is terminated by signals like SIGTERM,
+deferred functions will no run. And in this case, the wrapped function
+will be called in the signal handlers registered in
+=RegisterShutdownHook=.
+
+The wrapped function is guaranteed to be called only once, either in
+=defer= or in signal handlers.
