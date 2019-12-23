@@ -180,7 +180,6 @@ func TestOrder(t *testing.T) {
 	cmd.Wait()
 
 	if output.String() != "Triggered3\nTriggered2\nTriggered1\n" {
-		fmt.Printf("DEBUG: output = %+v\n", output)
 		t.Fatal("The order is different from defer!")
 	}
 }
