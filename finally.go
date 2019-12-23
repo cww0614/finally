@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime/debug"
+	"sort"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -54,11 +55,21 @@ func RegisterShutdownHook(signals ...os.Signal) {
 	go func() {
 		sig := <-ch
 
+		hs := make([]*handlerContext, 0)
+
 		handlers.Range(func(key, value interface{}) bool {
 			hc := value.(*handlerContext)
-			hc.execute(&sig)
+			hs = append(hs, hc)
 			return true
 		})
+
+		sort.Slice(hs, func(i, j int) bool {
+			return hs[i].seq > hs[j].seq
+		})
+
+		for _, h := range hs {
+			h.execute(sig)
+		}
 
 		os.Exit(1)
 	}()
@@ -97,7 +108,7 @@ func newHandlerContext() *handlerContext {
 	return c
 }
 
-func (c *handlerContext) execute(sig *os.Signal) {
+func (c *handlerContext) execute(sig os.Signal) {
 	isExecuted := atomic.AddInt32(&c.isExecuted, 1)
 	if isExecuted > 1 {
 		return
@@ -115,7 +126,7 @@ func (c *handlerContext) execute(sig *os.Signal) {
 	}()
 
 	if c.acceptArgument {
-		c.sigHandler(*sig)
+		c.sigHandler(sig)
 	} else {
 		c.handler()
 	}
