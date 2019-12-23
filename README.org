@@ -1,5 +1,7 @@
 * finally
 
+[[https://godoc.org/github.com/chrisww/finally][https://img.shields.io/badge/godoc-finally-blue.svg]]
+
 Makes sure cleanup functions are called in addition to =defer=.
 
 ** Example
