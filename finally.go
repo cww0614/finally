@@ -1,3 +1,7 @@
+// finally is a package helping to enhance cleanup handlers which is
+// usually used with defer. By wrapping functions with finally.Wrap,
+// cleanup handlers are guaranteed to be executed even when the
+// program is terminated by SIGTERM.
 package finally
 
 import (
@@ -13,20 +17,21 @@ import (
 type FinallyHandler func()
 type FinallyHandlerSig func(sig os.Signal)
 
-// `Wrap` wraps a function of type `func()` and returns another
-// function to call the input function . The input function will be
-// called when the program receives shutdown signals or the returned
-// function is called. The input function is guranteed to be invoked
-// only once.
+// Wrap wraps a function of type FinallyHandler and returns a function
+// to invoke the input function, which can be used in defer. The input
+// function will be called when the program receives shutdown signals
+// or with the returned function. The input function is guranteed to
+// be invoked only once.
 func Wrap(handler FinallyHandler) func() {
 	c := newHandlerContext()
 	c.handler = handler
 	return c.executeNoSig
 }
 
-// `WrapSig` does exactly the same thing as `Wrap`, except that is
-// accepts an argument representing the signal program received. If
-// the wrapping function is called, the signal will be nil.
+// WrapSig does exactly the same thing as Wrap, except that the
+// function can accept an argument representing the signal that the
+// program received. If the wrapping function is called, the signal
+// will be nil.
 func WrapSig(handler FinallyHandlerSig) func() {
 	c := newHandlerContext()
 	c.acceptArgument = true
@@ -34,9 +39,9 @@ func WrapSig(handler FinallyHandlerSig) func() {
 	return c.executeNoSig
 }
 
-// `RegisterShutdownHook` register signal handlers as the arguments
-// specified. If no arguments are specified, os.Interrupt and
-// syscall.SIGTERM handlers are registered.
+// RegisterShutdownHook registers signal handlers for signals
+// specified in the arguments. If no arguments are specified,
+// os.Interrupt and syscall.SIGTERM are used.
 func RegisterShutdownHook(signals ...os.Signal) {
 	ch := make(chan os.Signal)
 
@@ -59,9 +64,9 @@ func RegisterShutdownHook(signals ...os.Signal) {
 	}()
 }
 
-// `SetRecordStackTrace` set the config about whether the stacktrace
-// should be save so that when a panic happenes in a finally handler,
-// the stacktrace could be shown.
+// SetRecordStackTrace set the config about whether the stacktrace
+// should be saved. If it is set to true, when a panic happenes in a
+// finally handler, the stacktrace will be shown.
 func SetRecordStackTrace(v bool) {
 	recordStackTrace = v
 }

@@ -1,4 +1,4 @@
-package finally
+package finally_test
 
 import (
 	"bytes"
@@ -11,7 +11,21 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/chrisww/finally"
 )
+
+func Example() {
+	finally.RegisterShutdownHook()
+
+	cleanup := finally.Wrap(func() {
+		fmt.Println("Cleaning up")
+	})
+
+	defer cleanup()
+
+	fmt.Println("Doing something")
+}
 
 func runTestProgram(name string) (*exec.Cmd, *bytes.Buffer, func(), error) {
 	buildOutput, err := exec.Command("go", "build", name).CombinedOutput()
